@@ -63,7 +63,7 @@ StepSize = 0.1
 DisableMutationChance = 0.4
 EnableMutationChance = 0.2
 
-TimeoutConstant = 20
+TimeoutConstant = 2000000
 
 MaxNodes = 1000000
 
@@ -84,7 +84,10 @@ function getPositions()
 		screenX = memory.readbyte(0x03AD)
 		screenY = memory.readbyte(0x03B8)
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
-		playerX = 0
+		playerX = memory.readbyte(0x03EE)
+		playerY = memory.readbyte(0x040C)
+		screenX = 0
+		screenY = 0
 		
 	end
 	print("playerX:")
@@ -117,6 +120,8 @@ function getTile(dx, dy)
 		else
 			return 0
 		end
+	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
+		return 0
 	end
 end
 
@@ -145,6 +150,10 @@ function getSprites()
 		end
 		
 		return sprites
+
+	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
+		local sprites = {}
+		return sprites
 	end
 end
 
@@ -163,7 +172,10 @@ function getExtendedSprites()
 		return extended
 	elseif gameinfo.getromname() == "Super Mario Bros." then
 		return {}
+	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
+		return {}
 	end
+
 end
 
 function getInputs()
@@ -1184,6 +1196,8 @@ while true do
 	joypad.set(controller)
 
 	getPositions()
+	--this if statment updates the rightmost position gained and 
+	--resets the timeout counter if the player has moved further right then the last frame
 	if playerX > rightmost then
 		rightmost = playerX
 		timeout = TimeoutConstant
@@ -1193,8 +1207,11 @@ while true do
 	
 	
 	local timeoutBonus = pool.currentFrame / 4
-	if timeout + timeoutBonus <= 0 then
-		local fitness = rightmost - pool.currentFrame / 2
+	--checks fitness when the player has not moved for x amount of time and then
+	--writes the current iteration to the pool.
+	--After that it initializes the next run
+	if timeout + timeoutBonus <= 0 then 
+		local fitness = rightmost - pool.currentFrame / 2 -- fitness = furthest distance reached - number of frames passed / 2
 		if gameinfo.getromname() == "Super Mario World (USA)" and rightmost > 4816 then
 			fitness = fitness + 1000
 		end
