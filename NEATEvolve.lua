@@ -63,7 +63,7 @@ StepSize = 0.1
 DisableMutationChance = 0.4
 EnableMutationChance = 0.2
 
-TimeoutConstant = 2000000
+TimeoutConstant = 200
 
 MaxNodes = 1000000
 
@@ -84,16 +84,17 @@ function getPositions()
 		screenX = memory.readbyte(0x03AD)
 		screenY = memory.readbyte(0x03B8)
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
-		playerX = memory.readbyte(0x03EE)
+		--still trying to figure out exactly how it stores player locations
+		playerX =  memory.readbyte(0x03EE) * 0x100 + memory.readbyte(0x0203)
 		playerY = memory.readbyte(0x040C)
 		screenX = 0
 		screenY = 0
 		
 	end
-	print("playerX:")
-	print(playerX)
-	print("playerY:")
-	print(playerY)
+	--print("playerX:")
+	--print(playerX)
+	--print("playerY:")
+	--print(playerY)
 end
 
 function getTile(dx, dy)
@@ -861,6 +862,12 @@ end
 function initializeRun()
 	savestate.load(Filename);
 	rightmost = 0
+	--Currently for battletoads we are staritng in the middle of the level 
+	--so I need to change the rightmost setting to be here
+	if gameinfo.getromname() == "Battletoads (U) [p1]" then
+		rightmost = 1798
+	end
+
 	pool.currentFrame = 0
 	timeout = TimeoutConstant
 	clearJoypad()
@@ -1211,7 +1218,12 @@ while true do
 	--writes the current iteration to the pool.
 	--After that it initializes the next run
 	if timeout + timeoutBonus <= 0 then 
-		local fitness = rightmost - pool.currentFrame / 2 -- fitness = furthest distance reached - number of frames passed / 2
+		local fitness = 0
+		if gameinfo.getromname() == "Battletoads (U) [p1]" then
+			fitness = rightmost - 1798 - pool.currentFrame / 2 --Battletoads turbo tunnel fitness should not incliude the distance from the start of the level
+		else
+			fitness = rightmost - pool.currentFrame / 2 -- fitness = furthest distance reached - number of frames passed / 2
+		end
 		if gameinfo.getromname() == "Super Mario World (USA)" and rightmost > 4816 then
 			fitness = fitness + 1000
 		end
@@ -1250,7 +1262,11 @@ while true do
 	end
 	if not forms.ischecked(hideBanner) then
 		gui.drawText(0, 0, "Gen " .. pool.generation .. " species " .. pool.currentSpecies .. " genome " .. pool.currentGenome .. " (" .. math.floor(measured/total*100) .. "%)", 0xFF000000, 11)
-		gui.drawText(0, 12, "Fitness: " .. math.floor(rightmost - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3), 0xFF000000, 11)
+		if gameinfo.getromname() == "Battletoads (U) [p1]" then
+			gui.drawText(0, 12, "Fitness: " .. math.floor(rightmost - 1798 - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3), 0xFF000000, 11)
+		else
+			gui.drawText(0, 12, "Fitness: " .. math.floor(rightmost - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3), 0xFF000000, 11)
+		end
 		gui.drawText(100, 12, "Max Fitness: " .. math.floor(pool.maxFitness), 0xFF000000, 11)
 	end
 		
