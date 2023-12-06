@@ -63,7 +63,11 @@ StepSize = 0.1
 DisableMutationChance = 0.4
 EnableMutationChance = 0.2
 
-TimeoutConstant = 200
+if gameinfo.getromname() == "Battletoads (U) [p1]" then 
+	TimeoutConstant = 200
+else
+	TimeoutConstant = 20
+end
 
 MaxNodes = 1000000
 
@@ -79,13 +83,20 @@ function getPositions()
 		screenY = playerY-layer1y
 	elseif gameinfo.getromname() == "Super Mario Bros." then
 		playerX = memory.readbyte(0x6D) * 0x100 + memory.readbyte(0x86)
+		--$6D is cllaed Player_PageLoc
+		--$$86 is called Player_X_Position
 		playerY = memory.readbyte(0x03B8)+16
+		--$3b8 seems to hold 2 bytes, the seocnd one is player_rel_YPos
 	
 		screenX = memory.readbyte(0x03AD)
+		--$3ad is called SprObject_Rel_XPos
 		screenY = memory.readbyte(0x03B8)
+		--$3b8 first value is called SprObject_Rel_Ypos
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		--still trying to figure out exactly how it stores player locations
-		playerX =  memory.readbyte(0x03EE) * 0x100 + memory.readbyte(0x0203)
+		playerX =  memory.readbyte(0x03EE) * 0x100 + memory.readbyte(0x0203) --This isn't exact but it seems to work for now
+		--$3EE is called Objects_Xpos_H in asm code
+		--$203 is called Sprites_Xpos in asm code
 		playerY = memory.readbyte(0x040C)
 		screenX = 0
 		screenY = 0
@@ -143,9 +154,14 @@ function getSprites()
 		local sprites = {}
 		for slot=0,4 do
 			local enemy = memory.readbyte(0xF+slot)
+			--this appears to be an enemy flag
 			if enemy ~= 0 then
 				local ex = memory.readbyte(0x6E + slot)*0x100 + memory.readbyte(0x87+slot)
-				local ey = memory.readbyte(0xCF + slot)+24
+				--$6e is called Enemy_PageLoc, this appears to span 6 bytes
+				--$87 is called Enemy_X_Position, this appears to span 6 bytes
+				local ey = memory.readbyte(0xCF + slot)+24 --I am unsure why we are adding 24 here
+				--$cf is called Enemy_Y_Position, it appears to span 6 bytes
+
 				sprites[#sprites+1] = {["x"]=ex,["y"]=ey}
 			end
 		end
@@ -154,6 +170,13 @@ function getSprites()
 
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		local sprites = {}
+		--sprite2 add
+		for slot = 0,4 do
+			local sprite_x = memory.readbyte(0x03FF) * 0x100 + memory.readbyte(0x0207)
+			--$3FF is called object_3_Xpos_l so idk if its right whastoever
+			--$207 is called sprite2_Xpos
+			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = 50}
+		end
 		return sprites
 	end
 end
