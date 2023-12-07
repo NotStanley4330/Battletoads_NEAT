@@ -171,10 +171,14 @@ function getSprites()
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		local sprites = {}
 		--sprite2 add
-		for slot = 0,4 do
-			local sprite_x = memory.readbyte(0x03FF) * 0x100 + memory.readbyte(0x0207)
+		for slot = 0,20 do
+			--local sprite_x = memory.readbyte(0x03FF + slot) * 0x100 + memory.readbyte(0x0207 + slot)
 			--$3FF is called object_3_Xpos_l so idk if its right whastoever
 			--$207 is called sprite2_Xpos
+			local sprite_x = memory.readbyte(0x023B) * 0x100 + memory.readbyte(0x0203)
+			--$023B is called sprite15_Xpos and spans 54 bytes?
+			local sprite_y = memory.readbyte(0x0238)
+			--$0238 is called sprite15_Ypos
 			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = 50}
 		end
 		return sprites
