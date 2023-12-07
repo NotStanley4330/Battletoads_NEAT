@@ -1,0 +1,22 @@
+Objects_Xpos_H:
+Address:
+Length: 1 byte
+Use: 
+
+player2_Xpos_H
+Length: 13 bytes?
+Use:
+
+Object14_Xpos_H:
+Length: 1 byte
+Use:
+
+Sprites_Xpos:
+Address: 0x0203
+Length: 1 byte
+Use:
+
+sprite2_Xpos:
+Address: 0x207
+Length: 14 bytes?
+Use:
