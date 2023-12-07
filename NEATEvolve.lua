@@ -97,13 +97,14 @@ function getPositions()
 		playerX =  memory.readbyte(0x03EE) * 0x100 + memory.readbyte(0x0203) --This isn't exact but it seems to work for now
 		--$3EE is called Objects_Xpos_H in asm code
 		--$203 is called Sprites_Xpos in asm code
-		playerY = memory.readbyte(0x040C)
+		--playerY = memory.readbyte(0x040C)
+		playerY = 150 --temp for testing
 		screenX = 0
 		screenY = 0
 		
 	end
-	print("playerX:")
-	print(playerX)
+	--print("playerX:")
+	--print(playerX)
 	--print("playerY:")
 	--print(playerY)
 end
@@ -143,9 +144,10 @@ function getSprites()
 		for slot=0,11 do
 			local status = memory.readbyte(0x14C8+slot)
 			if status ~= 0 then
-				spritex = memory.readbyte(0xE4+slot) + memory.readbyte(0x14E0+slot)*256
-				spritey = memory.readbyte(0xD8+slot) + memory.readbyte(0x14D4+slot)*256
-				sprites[#sprites+1] = {["x"]=spritex, ["y"]=spritey}
+				local spritex = memory.readbyte(0xE4+slot) + memory.readbyte(0x14E0+slot)*256
+				local spritey = memory.readbyte(0xD8+slot) + memory.readbyte(0x14D4+slot)*256
+				sprites[#sprites+1] = {["x"] =spritex, ["y"] = spritey}
+				console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, spritex, spritey))
 			end
 		end		
 		
@@ -163,6 +165,7 @@ function getSprites()
 				--$cf is called Enemy_Y_Position, it appears to span 6 bytes
 
 				sprites[#sprites+1] = {["x"]=ex,["y"]=ey}
+				console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, ex, ey))
 			end
 		end
 		
@@ -171,17 +174,18 @@ function getSprites()
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		local sprites = {}
 		--sprite2 add
-		for slot = 0,20 do
+		for slot = 0,13 do
 			--local sprite_x = memory.readbyte(0x03FF + slot) * 0x100 + memory.readbyte(0x0207 + slot)
 			--$3FF is called object_3_Xpos_l so idk if its right whastoever
 			--$207 is called sprite2_Xpos
 			--local sprite_x = memory.readbyte(0x023B) * 0x100 + memory.readbyte(0x0203)
 			--$023B is called sprite15_Xpos and spans 54 bytes?
-			local sprite_x = memory.readbyte(0x03FF + slot) * 0x100 + memory.readbyte(0x203)
-			local sprite_y = memory.readbyte(0x0238)
+			local sprite_x = memory.readbyte(0x207 + slot) * 0x10 + memory.readbyte(0x203) 
+			local sprite_y = memory.readbyte(0x0204)
 			--$0238 is called sprite15_Ypos
-			print("SpriteX:")
-			print(sprite_x)
+			--$0204 is called sprite2_Ypos
+			--print("SpriteX:")
+			--print(sprite_x)
 			print("SpriteY:")
 			print(sprite_y)
 			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
@@ -231,6 +235,7 @@ function getInputs()
 			for i = 1,#sprites do
 				distx = math.abs(sprites[i]["x"] - (playerX+dx))
 				disty = math.abs(sprites[i]["y"] - (playerY+dy))
+				--console.writeline(string.format("Dist for sprite %d is %d , %d", i, distx, disty))
 				if distx <= 8 and disty <= 8 then
 					inputs[#inputs] = -1
 				end
@@ -1037,6 +1042,7 @@ function displayGenome(genome)
 	end
 	
 	gui.drawBox(50-BoxRadius*5-3,70-BoxRadius*5-3,50+BoxRadius*5+2,70+BoxRadius*5+2,0xFF000000, 0x80808080)
+	--here is where all the inputs are drawn including sprites
 	for n,cell in pairs(cells) do
 		if n > Inputs or cell.value ~= 0 then
 			local color = math.floor((cell.value+1)/2*256)
@@ -1047,9 +1053,16 @@ function displayGenome(genome)
 				opacity = 0x50000000
 			end
 			color = opacity + color*0x10000 + color*0x100 + color
-			gui.drawBox(cell.x-2,cell.y-2,cell.x+2,cell.y+2,opacity,color)
+			gui.drawBox(cell.x-2,cell.y-2,cell.x+2,cell.y+2,opacity,color) --this is where the sprites are drawn
+
 		end
 	end
+
+	--here imma draw square around each sprite so I can know what is where
+	for i = 1,#sprites do
+		gui.drawBox(sprites[i]["x"], sprites[i]["y"], sprites[i]["x"] + 8, sprites[i]["y"] + 8)
+	end
+
 	for _,gene in pairs(genome.genes) do
 		if gene.enabled then
 			local c1 = cells[gene.into]
