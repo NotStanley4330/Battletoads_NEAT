@@ -16,7 +16,11 @@ while true do
     
     print("player2_Xpos_H:")
     for slot=0,12 do --It appears to be 13 bytes long so this should cover the whole thing
-        print(string.format("The value of player2_Xpos_H in slot %d is: %d", slot, player2_Xpos_H[slot]))
+        if (player2_Xpos_H[slot] == nil) then
+            print(string.format("The value of player2_Xpos_H in slot %d is NIL!", slot))
+        else
+            print(string.format("The value of player2_Xpos_H in slot %d is: %d", slot, player2_Xpos_H[slot]))
+        end
     end
 
     Object14_Xpos_H = memory.readbyte(0x03FC)
@@ -34,10 +38,14 @@ while true do
     --print the values of sprite2_Xpos
     print("sprite2_Xpos")
     for slot=0,13 do
-        print(string.format("The value of sprite2_Xpos at slot %d is: %d", slot, sprite2_Xpos[slot]))
+        if (sprite2_Xpos[slot] == nil) then
+            print(string.format("The value of sprite2_Xpos at slot %d is: NIL!", slot))
+        else
+            print(string.format("The value of sprite2_Xpos at slot %d is: %d", slot, sprite2_Xpos[slot]))
+        end
     end
 
-    
+
 
 
 
