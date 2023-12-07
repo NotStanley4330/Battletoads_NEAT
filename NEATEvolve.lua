@@ -1059,8 +1059,8 @@ function displayGenome(genome)
 	end
 
 	--here imma draw square around each sprite so I can know what is where
-	for i = 1,#sprites do
-		gui.drawBox(sprites[i]["x"], sprites[i]["y"], sprites[i]["x"] + 8, sprites[i]["y"] + 8)
+	for x = 1,#sprites do
+		gui.drawBox(sprites[x]["x"], sprites[x]["y"], sprites[x]["x"] + 8, sprites[x]["y"] + 8)
 	end
 
 	for _,gene in pairs(genome.genes) do
