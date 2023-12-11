@@ -149,7 +149,8 @@ function getSprites()
 				sprites[#sprites+1] = {["x"] =spritex, ["y"] = spritey}
 				console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, spritex, spritey))
 			end
-		end		
+		end	
+
 		
 		return sprites
 	elseif gameinfo.getromname() == "Super Mario Bros." then
@@ -165,7 +166,7 @@ function getSprites()
 				--$cf is called Enemy_Y_Position, it appears to span 6 bytes
 
 				sprites[#sprites+1] = {["x"]=ex,["y"]=ey}
-				console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, ex, ey))
+				--console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, ex, ey))
 			end
 		end
 		
@@ -182,13 +183,23 @@ function getSprites()
 			--$023B is called sprite15_Xpos and spans 54 bytes?
 			local sprite_x = memory.readbyte(0x207 + slot) * 0x10 + memory.readbyte(0x203) 
 			local sprite_y = memory.readbyte(0x0204)
-			--$0238 is called sprite15_Ypos
 			--$0204 is called sprite2_Ypos
 			--print("SpriteX:")
 			--print(sprite_x)
-			print("SpriteY:")
-			print(sprite_y)
+			--print("SpriteY:")
+			--print(sprite_y)
 			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+		end
+
+		--This is going to get extremely messy and probably crash things
+		for slot = 0, 197 do
+			local sprite_x = memory.readbyte(0x23B + slot) * 0x10 + memory.readbyte(0x203)
+			--$023B is called sprite15_Xpos
+			local sprite_y = memory.readbyte(0x238)
+			--$0238 is called sprite15_Ypos (I really dont understand it)
+			if (sprite_x ~= nil) then
+				sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+			end
 		end
 		return sprites
 	end
@@ -1060,7 +1071,9 @@ function displayGenome(genome)
 
 	--here imma draw square around each sprite so I can know what is where
 	for x = 1,#sprites do
-		gui.drawBox(sprites[x]["x"], sprites[x]["y"], sprites[x]["x"] + 8, sprites[x]["y"] + 8)
+		local color = 24
+		local opacity =  0x50000000
+		gui.drawBox(sprites[x]["x"], sprites[x]["y"], sprites[x]["x"] + 8, sprites[x]["y"] + 8,opacity,color)
 	end
 
 	for _,gene in pairs(genome.genes) do

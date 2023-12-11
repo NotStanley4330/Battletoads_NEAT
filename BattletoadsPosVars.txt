@@ -20,3 +20,9 @@ sprite2_Xpos:
 Address: 0x207
 Length: 14 bytes?
 Use:
+
+
+sprite15_Xpos:
+Adress: 0x023B
+Length: 198 Bytes!!
+Use: 
