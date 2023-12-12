@@ -23,6 +23,13 @@ Use:
 
 
 sprite15_Xpos:
-Adress: 0x023B
+Address: 0x023B
 Length: 198 Bytes!!
+Use: Somehow I think this may be related to the speederbike in the turbotunnel but I cannot tell for sure
+
+cameraXpos_H:
+Address: 0x0088
+Length: 1 byte
 Use: 
+This one actually appears to update as you move left to right while Sprites_Xpos goes unchanged. 
+Yet to see how that plays out

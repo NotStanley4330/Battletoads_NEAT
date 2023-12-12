@@ -101,8 +101,17 @@ function getPositions()
 		playerY = 150 --temp for testing
 		screenX = 0
 		screenY = 0
+
+		--Some diagnostic code to check what a few things are outputting as their value
+		local cameraXPos_H = memory.readbyte(0x0088)
+		console.writeline(string.format("camerasXpos_H is: %d", cameraXPos_H))
+		local sprites_Xpos = memory.readbyte(0x0203)
+		console.writeline(string.format("sprites_Xpos is: %d", sprites_Xpos))
+		--From some tubotunnel experimetns it appears cameraXpos_H actualyl changes
+		-- while sprites_Xpos appears to not move at all. This could be progress!!
 		
 	end
+	
 	--print("playerX:")
 	--print(playerX)
 	--print("playerY:")
