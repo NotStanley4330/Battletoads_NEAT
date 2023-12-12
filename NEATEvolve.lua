@@ -94,21 +94,25 @@ function getPositions()
 		--$3b8 first value is called SprObject_Rel_Ypos
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		--still trying to figure out exactly how it stores player locations
-		playerX =  memory.readbyte(0x03EE) * 0x100 + memory.readbyte(0x0203) --This isn't exact but it seems to work for now
+		playerX =  memory.readbyte(0x0484) * 0x100 + memory.readbyte(0x0087) --This isn't exact but it seems to work for now
+		--$484 is called Objects_X_Shadow and it works really well for the turbo tunnel tracking
 		--$3EE is called Objects_Xpos_H in asm code
 		--$203 is called Sprites_Xpos in asm code
-		--playerY = memory.readbyte(0x040C)
-		playerY = 150 --temp for testing
-		screenX = 0
-		screenY = 0
+		playerY = memory.readbyte(0x041B) --$041B is called Objexts_Ypos_L, but seems to work well for turbo tunnel
+		--$493 is also very precise but I'm unusre how well it will fit with the framework
+		screenX = memory.readbyte(0x0484)
+		screenY = memory.readbyte(0x041B)
 
 		--Some diagnostic code to check what a few things are outputting as their value
-		local cameraXPos_H = memory.readbyte(0x0088)
-		console.writeline(string.format("camerasXpos_H is: %d", cameraXPos_H))
-		local sprites_Xpos = memory.readbyte(0x0203)
-		console.writeline(string.format("sprites_Xpos is: %d", sprites_Xpos))
-		--From some tubotunnel experimetns it appears cameraXpos_H actualyl changes
+		--local cameraXPos_H = memory.readbyte(0x0087)
+		--console.writeline(string.format("camerasXpos_1 is: %d", cameraXPos_H))
+		-- local sprites_Xpos = memory.readbyte(0x0203)
+		-- console.writeline(string.format("sprites_Xpos is: %d", sprites_Xpos))
+		--From some tubotunnel experimetns it appears cameraXpos_H actually changes
 		-- while sprites_Xpos appears to not move at all. This could be progress!!
+
+		--local Objects_YPos_H = memory.readbyte(0x040C)
+		--console.writeline(string.format("Objects_Ypos_H is: %d", Objects_YPos_H))
 		
 	end
 	
@@ -156,7 +160,7 @@ function getSprites()
 				local spritex = memory.readbyte(0xE4+slot) + memory.readbyte(0x14E0+slot)*256
 				local spritey = memory.readbyte(0xD8+slot) + memory.readbyte(0x14D4+slot)*256
 				sprites[#sprites+1] = {["x"] =spritex, ["y"] = spritey}
-				console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, spritex, spritey))
+				--console.writeline(string.format("Sprite at slot %d is at %d , %d", slot, spritex, spritey))
 			end
 		end	
 
@@ -190,26 +194,25 @@ function getSprites()
 			--$207 is called sprite2_Xpos
 			--local sprite_x = memory.readbyte(0x023B) * 0x100 + memory.readbyte(0x0203)
 			--$023B is called sprite15_Xpos and spans 54 bytes?
-			local sprite_x = memory.readbyte(0x207 + slot) * 0x10 + memory.readbyte(0x203) 
+			local sprite_x = memory.readbyte(0x207 + slot) * 0x10 + memory.readbyte(0x0087) 
 			local sprite_y = memory.readbyte(0x0204)
 			--$0204 is called sprite2_Ypos
-			--print("SpriteX:")
-			--print(sprite_x)
-			--print("SpriteY:")
-			--print(sprite_y)
+			--console.writeline(string.format("For slot %d the coords are %d , %d", slot, sprite_x, sprite_y))
 			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
 		end
 
 		--This is going to get extremely messy and probably crash things
-		for slot = 0, 197 do
-			local sprite_x = memory.readbyte(0x23B + slot) * 0x10 + memory.readbyte(0x203)
-			--$023B is called sprite15_Xpos
-			local sprite_y = memory.readbyte(0x238)
-			--$0238 is called sprite15_Ypos (I really dont understand it)
-			if (sprite_x ~= nil) then
-				sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
-			end
-		end
+		-- for slot = 0, 197 do
+		-- 	local sprite_x = memory.readbyte(0x23B + slot) * 0x100 + memory.readbyte(0x0088)
+		-- 	--$023B is called sprite15_Xpos
+		-- 	local sprite_y = memory.readbyte(0x238)
+		-- 	--$0238 is called sprite15_Ypos (I really dont understand it)
+		-- 	if (sprite_x ~= nil) then
+		-- 		sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+		-- 	end
+		-- end
+
+		--$488/487 is a known address for a wall x location
 		return sprites
 	end
 end

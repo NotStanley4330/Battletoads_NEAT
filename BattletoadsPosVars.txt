@@ -33,3 +33,9 @@ Length: 1 byte
 Use: 
 This one actually appears to update as you move left to right while Sprites_Xpos goes unchanged. 
 Yet to see how that plays out
+
+Objects_Ypos_H:
+Address: 0x040C
+Length: 1 byte
+Use : Currently unkown, it does not seem to reflect the Y Positon of Player one however
+
