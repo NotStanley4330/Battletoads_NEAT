@@ -202,17 +202,17 @@ function getSprites()
 		end
 
 		--This is going to get extremely messy and probably crash things
-		-- for slot = 0, 197 do
-		-- 	local sprite_x = memory.readbyte(0x23B + slot) * 0x100 + memory.readbyte(0x0088)
-		-- 	--$023B is called sprite15_Xpos
-		-- 	local sprite_y = memory.readbyte(0x238)
-		-- 	--$0238 is called sprite15_Ypos (I really dont understand it)
-		-- 	if (sprite_x ~= nil) then
-		-- 		sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
-		-- 	end
-		-- end
+		for slot = 0, 197 do
+			local sprite_x = memory.readbyte(0x023B + slot) * 0x100 + memory.readbyte(0x0087)
+			--$023B is called sprite15_Xpos
+			local sprite_y = memory.readbyte(0x0238)
+			--$0238 is called sprite15_Ypos (I really dont understand it)
+			if (sprite_x ~= nil) then
+				sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+			end
+		end
 
-		--$488/487 is a known address for a wall x location
+		--$488/277 is a known address for a wall x location
 		return sprites
 	end
 end
