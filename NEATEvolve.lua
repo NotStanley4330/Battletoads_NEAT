@@ -94,11 +94,13 @@ function getPositions()
 		--$3b8 first value is called SprObject_Rel_Ypos
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		--still trying to figure out exactly how it stores player locations
-		playerX =  memory.readbyte(0x0484) * 0x100 + memory.readbyte(0x0087) --This isn't exact but it seems to work for now
+		playerX =  memory.readbyte(0x0484) + (memory.readbyte(0x0088) * 0x100) + memory.readbyte(0x0087) --This is a pretty good estiamte for the turbo tunnel
+		--This formula works as thus. We read the on screen location of the caracters shadow using $0484.
+		--Next, we take 
+
 		--$484 is called Objects_X_Shadow and it works really well for the turbo tunnel tracking
-		--$3EE is called Objects_Xpos_H in asm code
-		--$203 is called Sprites_Xpos in asm code
-		playerY = memory.readbyte(0x041B) --$041B is called Objexts_Ypos_L, but seems to work well for turbo tunnel
+
+		playerY = memory.readbyte(0x0496) --$041B is called Objects_Ypos_L, but seems to work well for turbo tunnel
 		--$493 is also very precise but I'm unusre how well it will fit with the framework
 		screenX = memory.readbyte(0x0484)
 		screenY = memory.readbyte(0x041B)
@@ -188,31 +190,47 @@ function getSprites()
 	elseif gameinfo.getromname() == "Battletoads (U) [p1]" then
 		local sprites = {}
 		--sprite2 add
-		for slot = 0,13 do
-			--local sprite_x = memory.readbyte(0x03FF + slot) * 0x100 + memory.readbyte(0x0207 + slot)
-			--$3FF is called object_3_Xpos_l so idk if its right whastoever
-			--$207 is called sprite2_Xpos
-			--local sprite_x = memory.readbyte(0x023B) * 0x100 + memory.readbyte(0x0203)
-			--$023B is called sprite15_Xpos and spans 54 bytes?
-			local sprite_x = memory.readbyte(0x207 + slot) * 0x10 + memory.readbyte(0x0087) 
-			local sprite_y = memory.readbyte(0x0204)
-			--$0204 is called sprite2_Ypos
-			--console.writeline(string.format("For slot %d the coords are %d , %d", slot, sprite_x, sprite_y))
-			sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
-		end
+		-- for slot = 0,13 do
+		-- 	--local sprite_x = memory.readbyte(0x03FF + slot) * 0x100 + memory.readbyte(0x0207 + slot)
+		-- 	--$3FF is called object_3_Xpos_l so idk if its right whastoever
+		-- 	--$207 is called sprite2_Xpos
+		-- 	--local sprite_x = memory.readbyte(0x023B) * 0x100 + memory.readbyte(0x0203)
+		-- 	--$023B is called sprite15_Xpos and spans 54 bytes?
+		-- 	local sprite_x = memory.readbyte(0x207 + slot) * 0x100 + memory.readbyte(0x0087) 
+		-- 	local sprite_y = memory.readbyte(0x0204)
+		-- 	--$0204 is called sprite2_Ypos
+		-- 	--console.writeline(string.format("For slot %d the coords are %d , %d", slot, sprite_x, sprite_y))
+		-- 	sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+		-- end
 
 		--This is going to get extremely messy and probably crash things
-		for slot = 0, 197 do
-			local sprite_x = memory.readbyte(0x023B + slot) * 0x100 + memory.readbyte(0x0087)
-			--$023B is called sprite15_Xpos
-			local sprite_y = memory.readbyte(0x0238)
-			--$0238 is called sprite15_Ypos (I really dont understand it)
-			if (sprite_x ~= nil) then
-				sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
-			end
+		-- for slot = 0, 197 do
+		-- 	local sprite_x = memory.readbyte(0x023B + slot) * 0x100 + memory.readbyte(0x0087)
+		-- 	--$023B is called sprite15_Xpos
+		-- 	local sprite_y = memory.readbyte(0x0238)
+		-- 	--$0238 is called sprite15_Ypos (I really dont understand it)
+		-- 	if (sprite_x ~= nil) then
+		-- 		sprites[#sprites+1] = {["x"] = sprite_x, ["y"] = sprite_y}
+		-- 	end
+		-- end
+
+		--this should at least work temporarily for the tunnel
+		local wall_x = memory.readbyte(0x0488) + (memory.readbyte(0x0088) * 0x100) + memory.readbyte(0x0087)
+
+
+		local wall_y = memory.readbyte(0x0497)
+		--wall_y = wall_y + 0x18
+		if (wall_x ~= nil) then
+			sprites[#sprites+1] = {["x"] = wall_x, ["y"] = wall_y}
+			--console.writeline(string.format("Wall coords are %d , %d", wall_x, wall_y))
+			-- console.writeline(string.format("Wall screen coords are %d, %d", memory.readbyte(0x0488), memory.readbyte(0x0497)))
+			-- console.writeline(string.format("Player screen cords are %d, %d", memory.readbyte(0x0484), memory.readbyte(0x041B)))
+			-- console.writeline(string.format("Camera X pos is %d", memory.readbyte(0x0088)))
 		end
 
 		--$488/277 is a known address for a wall x location
+		--$497 is a known address for a wall y location
+
 		return sprites
 	end
 end
@@ -260,7 +278,22 @@ function getInputs()
 				disty = math.abs(sprites[i]["y"] - (playerY+dy))
 				--console.writeline(string.format("Dist for sprite %d is %d , %d", i, distx, disty))
 				if distx <= 8 and disty <= 8 then
-					inputs[#inputs] = -1
+					--TODO: put checks in here to set values based on y position
+					if gameinfo.getromname() == "Battletoads (U) [p1]" then
+
+						if (sprites[i]["y"] == 152) then
+							inputs[#inputs] = -0.5
+						elseif (sprites[i]["y"] == 176) then
+							inputs[#inputs] = -1
+						else
+							inputs[#inputs] = 0
+						end
+
+						
+					
+					else
+						inputs[#inputs] = -1
+					end
 				end
 			end
 
@@ -1075,18 +1108,33 @@ function displayGenome(genome)
 			if cell.value == 0 then
 				opacity = 0x50000000
 			end
-			color = opacity + color*0x10000 + color*0x100 + color
+			if gameinfo.getromname() == "Battletoads (U) [p1]" then
+				if cell.value == -0.5 then
+					color = 0xFFF44336
+				elseif cell.value == -1 then
+					color = 0xFFE69138
+
+				else
+					color = opacity + color*0x10000 + color*0x100 + color
+				end
+			
+			else
+				color = opacity + color*0x10000 + color*0x100 + color
+			end
+
+			
+			--console.writeline(string.format("Color of the box value is %x", color))
 			gui.drawBox(cell.x-2,cell.y-2,cell.x+2,cell.y+2,opacity,color) --this is where the sprites are drawn
 
 		end
 	end
 
 	--here imma draw square around each sprite so I can know what is where
-	for x = 1,#sprites do
-		local color = 24
-		local opacity =  0x50000000
-		gui.drawBox(sprites[x]["x"], sprites[x]["y"], sprites[x]["x"] + 8, sprites[x]["y"] + 8,opacity,color)
-	end
+	-- for x = 1,#sprites do
+	-- 	local color = 24
+	-- 	local opacity =  0x50000000
+	-- 	gui.drawBox(sprites[x]["x"], sprites[x]["y"], sprites[x]["x"] + 8, sprites[x]["y"] + 8,opacity,color)
+	-- end
 
 	for _,gene in pairs(genome.genes) do
 		if gene.enabled then
