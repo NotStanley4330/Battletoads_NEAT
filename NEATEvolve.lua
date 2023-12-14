@@ -96,7 +96,8 @@ function getPositions()
 		--still trying to figure out exactly how it stores player locations
 		playerX =  memory.readbyte(0x0484) + (memory.readbyte(0x0088) * 0x100) + memory.readbyte(0x0087) --This is a pretty good estiamte for the turbo tunnel
 		--This formula works as thus. We read the on screen location of the caracters shadow using $0484.
-		--Next, we take 
+		--Next, we take the general camera position. This is in whole screen units so we multiply by 0x100 to get the length in pixels.
+		--Finally, we add the fine camera position which is in fractioanl screen units
 
 		--$484 is called Objects_X_Shadow and it works really well for the turbo tunnel tracking
 
